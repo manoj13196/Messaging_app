@@ -2,23 +2,25 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Input, Button, List, Typography } from "antd";
+import { socket } from "../socket"; // Import our socket client
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const Chat = () => {
-  const { userId } = useParams(); // Get ID of the user you're chatting with
-  const [messages, setMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState("");
+  const { userId } = useParams(); // Recipient user ID from URL
+  const [messages, setMessages] = useState<any[]>([]); // Chat messages state
+  const [newMessage, setNewMessage] = useState(""); // Controlled input for message
 
   const token = localStorage.getItem("token");
 
+  const user_pay= localStorage.getItem("pay");
+  console.log(user_pay)
+  // 1. Fetch old messages on mount or when userId changes
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const res = await axios.get(`${API_URL}/messages/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         setMessages(res.data);
       } catch (err) {
@@ -27,29 +29,49 @@ export const Chat = () => {
     };
 
     fetchMessages();
-  }, [userId]);
+  }, []);
 
-const sendMessage = async () => {
-  try {
-    const receiverId = Number(userId); // Convert userId from string to number
+  // 2. Socket connection lifecycle
+  useEffect(() => {
+    if (!token) return; // If not logged in, do nothing
 
-    const res = await axios.post(
-      `${API_URL}/messages`,
-      { receiverId, content: newMessage }, // Use receiverId here
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    // Connect socket (remember, autoConnect was false)
+    socket.connect();
 
-    setMessages((prev) => [...prev, res.data]);
+    // Join current user's room for private messages
+    // (server-side will get userId from token)
+    socket.emit("join_room", { userId });
+
+    // Listen for real-time incoming messages
+    socket.on(`receive_message_${user_pay}`, (message) => {
+      // Append new message to state
+      setMessages((prev) => [...prev, message]);
+    });
+
+    // Cleanup: disconnect and remove listeners when unmount or userId changes
+    return () => {
+      socket.off(`receive_message_${user_pay}`);
+      socket.disconnect();
+    };
+  }, []);
+
+  // 3. Sending message handler
+  const sendMessage = () => {
+    if (!newMessage.trim()) return; // Prevent empty messages
+console.log(newMessage,userId)
+    // Emit message via websocket
+    socket.emit("send_message", {
+      content: newMessage,
+      to: userId, // recipient ID
+    });
+
+    // Optimistic UI update (optional): add message locally immediately
+    setMessages((prev) => [
+      ...prev,
+      { content: newMessage, sender: { email: "You" } },
+    ]);
     setNewMessage("");
-  } catch (err) {
-    console.error("Failed to send message", err);
-  }
-};
-
+  };
 
   return (
     <div style={{ padding: "1rem", maxWidth: 700, margin: "0 auto" }}>
@@ -72,7 +94,11 @@ const sendMessage = async () => {
         onChange={(e) => setNewMessage(e.target.value)}
         placeholder="Type your message..."
       />
-      <Button type="primary" onClick={sendMessage} style={{ marginTop: "1rem" }}>
+      <Button
+        type="primary"
+        onClick={sendMessage}
+        style={{ marginTop: "1rem" }}
+      >
         Send
       </Button>
     </div>

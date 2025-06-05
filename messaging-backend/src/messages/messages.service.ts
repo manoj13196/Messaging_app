@@ -32,14 +32,7 @@ export class MessagesService {
 
         return await this.messageRepo.save(message);
     }
-
-    // async findAll():Promise<Message[]>{
-    //     return await this.messageRepo.find({
-    //         order:{createdAt:'DESC'},
-    //     });
-    // }
-
-
+    
     async getMessagesWith(userId1:number, userId2:number):Promise<Message[]>{
         return this.messageRepo.find({
             where:[
