@@ -13,3 +13,4 @@ export const socket: Socket = io(API_URL, {
   },
   autoConnect: false, // We will connect manually when needed
 });
+  

@@ -36,6 +36,7 @@ export const Chat = () => {
     if (!token) return; // If not logged in, do nothing
 
     // Connect socket (remember, autoConnect was false)
+    
     socket.connect();
 
     // Join current user's room for private messages
