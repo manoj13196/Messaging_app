@@ -11,6 +11,6 @@ export const socket: Socket = io(API_URL, {
   auth: {
     token, // This is sent to backend as client.handshake.auth.token
   },
+  transports: ["websocket"], 
   autoConnect: false, // We will connect manually when needed
 });
-  
