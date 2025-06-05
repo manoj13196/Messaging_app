@@ -75,7 +75,7 @@ console.log(newMessage,userId)
 
   return (
     <div style={{ padding: "1rem", maxWidth: 700, margin: "0 auto" }}>
-      <Typography.Title level={3}>Chat with User {userId}</Typography.Title>
+      <Typography.Title level={3}>Chat with User {userId}...😊</Typography.Title>
 
       <List
         bordered
