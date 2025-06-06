@@ -28,7 +28,6 @@ export const authProvider: AuthProvider = {
 
    logout: async () => {
  
-    localStorage.removeItem("pay");
     localStorage.removeItem("token");
 
     localStorage.clear();

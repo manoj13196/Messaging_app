@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button, Typography, Space } from "antd";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../socket";
 
 export const HeaderBar = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
@@ -20,8 +21,13 @@ export const HeaderBar = () => {
   }, []);
 
   const handleLogout = () => {
+    
+    localStorage.removeItem("pay");
     localStorage.removeItem("token");
-    navigate("/login"); // redirect to login after logout
+   localStorage.clear();
+       socket.disconnect();
+   
+       return { success: true, redirectTo: "/login" };
   };
 
   return (
