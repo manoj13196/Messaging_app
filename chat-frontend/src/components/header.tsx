@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { Button, Typography, Space } from "antd";
-import { useNavigate } from "react-router-dom";
+
 import { socket } from "../socket";
 
 export const HeaderBar = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const navigate = useNavigate();
-
   useEffect(() => {
     const token = localStorage.getItem("token");
 
