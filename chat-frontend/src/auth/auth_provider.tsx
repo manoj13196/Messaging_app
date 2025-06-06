@@ -24,6 +24,7 @@ export const authProvider: AuthProvider = {
 
     logout: async () => {
         localStorage.removeItem("token");
+        localStorage.clear();
         return { success: true, redirectTo: "/login" };
     },
 
