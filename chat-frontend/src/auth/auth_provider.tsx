@@ -26,12 +26,21 @@ export const authProvider: AuthProvider = {
         }
     },
 
-    logout: async () => {
-       socket.disconnect(); // disconnect WebSocket
+   logout: async () => {
+    // Clear localStorage
     localStorage.removeItem("token");
+    localStorage.removeItem("pay");
     localStorage.clear();
+
+    // Also clear possible cookies (just in case)
+    document.cookie = "pay=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+    // Optionally disconnect WebSocket
+    socket.disconnect();
+
     return { success: true, redirectTo: "/login" };
-    },
+},
+
 
     check: async () => {
         const token = localStorage.getItem("token");
