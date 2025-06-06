@@ -1,5 +1,6 @@
 import axios from "axios";
 import type { AuthProvider, OnErrorResponse } from "@refinedev/core";
+import { socket } from "../socket";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -16,16 +17,20 @@ export const authProvider: AuthProvider = {
 
             localStorage.setItem("token", access_token);
             localStorage.setItem("pay", payload);
-            return { success: true, redirectTo: "/users" };
+
+             (socket.auth as { [key: string]: any }).token = access_token;
+        socket.connect();
+            return { success: true, redirectTo: "/users"    };
         } catch (error) {
             return Promise.reject(new Error("Login failed"));
         }
     },
 
     logout: async () => {
-        localStorage.removeItem("token");
-        localStorage.clear();
-        return { success: true, redirectTo: "/login" };
+       socket.disconnect(); // disconnect WebSocket
+    localStorage.removeItem("token");
+    localStorage.clear();
+    return { success: true, redirectTo: "/login" };
     },
 
     check: async () => {
